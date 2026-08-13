@@ -1,6 +1,5 @@
 import bcrypt
 
-
 def hash_password(password: str) -> str:
     # تحويل النص إلى Bytes مع اقتطاع أول 72 بايت لتجنب قيود bcrypt
     password_bytes = password.encode("utf-8")[:72]
