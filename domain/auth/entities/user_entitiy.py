@@ -17,7 +17,7 @@ class UserDBEntity(UserEntity):
         age: int,
         email: str,
         password: str,
-        is_admin: bool = False
+        is_admin: bool = False,
     ):
         super().__init__(id=id, name=name, age=age, is_admin=is_admin)
         
