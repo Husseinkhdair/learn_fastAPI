@@ -24,7 +24,7 @@ class MongoAuthRepository(AuthRepository):
             user_id = user_entity.id if user_entity.id and user_entity.id != "generated_id" else str(uuid.uuid4())
 
             user_doc = {
-                "id": user_id,
+                "_id": user_id,
                 "name": user_entity.name,
                 "age": user_entity.age,
                 "email": user_entity.email,
@@ -52,8 +52,9 @@ class MongoAuthRepository(AuthRepository):
 
             stored_hashed_password = user_doc.get("password", "")
             if verify_password(password, stored_hashed_password):
+                user_id = str(user_doc.get("_id") or user_doc.get("id"))
                 user_entity = UserEntity(
-                    id=user_doc.get("id", str(user_doc.get("_id"))),
+                    id=user_id,
                     name=user_doc.get("name"),
                     age=user_doc.get("age"),
                     is_admin=user_doc.get("is_admin", False)
