@@ -14,7 +14,8 @@ async def test_register_endpoint_success():
     assert response.status_code == 201
     data = response.json()
     assert data["message"] == "User registered successfully"
-    assert "data" in data
+    assert "access_token" in data
+    assert "user" in data
 
 @pytest.mark.asyncio
 async def test_register_endpoint_duplicate_email_400():

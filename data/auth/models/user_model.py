@@ -15,7 +15,7 @@ class UserModel(UserDBEntity):
     @classmethod
     def from_dict(cls, data: dict):
         return cls(
-            id=data.get("id"),
+            id=str(data.get("_id") or data.get("id")),
             name=data.get("name"),
             age=data.get("age"),
             email=data.get("email"),
@@ -35,10 +35,11 @@ class UserModel(UserDBEntity):
     @classmethod
     def to_dict(cls, user_model):
         return {
-            "id": user_model.id,
+            "_id": user_model.id,
             "name": user_model.name,
             "age": user_model.age,
             "email": user_model.email,
             "password": user_model.password,
             "is_admin": user_model.is_admin
         }
+

@@ -1,6 +1,7 @@
 import pytest
 from data.auth.data_sources.fack_auth_repository import FackAuthRepository
 from domain.auth.entities.user_entitiy import UserDBEntity
+from core.functions.security import hash_password
 
 @pytest.mark.asyncio
 async def test_register_user_success():
@@ -44,7 +45,7 @@ async def test_login_user_success():
         name="Ahmad",
         age=25,
         email="ahmad@example.com",
-        password="secretpassword123",
+        password=hash_password("secretpassword123"),
         is_admin=False
     )
     await repo.register_user(user_db)
@@ -68,7 +69,7 @@ async def test_login_user_invalid_password():
         name="Ahmad",
         age=25,
         email="ahmad@example.com",
-        password="correct_password",
+        password=hash_password("correct_password"),
         is_admin=False
     )
     await repo.register_user(user_db)
