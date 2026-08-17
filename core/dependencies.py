@@ -5,6 +5,7 @@ from data.auth.data_sources.fack_auth_repository import FackAuthRepository
 from data.auth.repository.auth_repositoy_imp import AuthRepositoryImp
 from domain.auth.repository.auth_repository import AuthRepository
 from domain.auth.usecauses.login_user_usecase import LoginUserUseCase
+from domain.auth.usecauses.register_user_usecase import RegisterUserUseCase
 
 
 
@@ -23,6 +24,6 @@ def provide_login_use_case(
 
 def provide_register_use_case(
     repo: AuthRepository = Depends(provide_auth_repository)
-) -> LoginUserUseCase:
-    return LoginUserUseCase(repo)
+) -> RegisterUserUseCase:
+    return RegisterUserUseCase(repo)
 

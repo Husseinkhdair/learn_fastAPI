@@ -1,13 +1,19 @@
-from dataclasses import dataclass
-from typing import Generic, Optional
-from annotated_types import T
+# core/result.py (أو core/Result.py)
 
+from typing import Generic, TypeVar, Optional, Any
 
-@dataclass
+T = TypeVar("T")
+
 class Result(Generic[T]):
-    data: Optional[T] = None
-    error: Optional[Exception] = None
+    def __init__(self, is_success: bool, value: Optional[T] = None, error: Optional[str] = None):
+        self.is_success = is_success
+        self.value = value
+        self.error = error
 
-    @property
-    def is_success(self) -> bool:
-        return self.error is None
+    @classmethod
+    def success(cls, value: T) -> "Result[T]":
+        return cls(is_success=True, value=value, error=None)
+
+    @classmethod
+    def failure(cls, error: str) -> "Result[Any]":
+        return cls(is_success=False, value=None, error=error)
