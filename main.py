@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.responses import FileResponse
-from presentation.auth.controller import router as auth_router
+from presentation.auth.controller.auth_controller import router as auth_router
 from pathlib import Path
 app = FastAPI()
 app.include_router(auth_router)
