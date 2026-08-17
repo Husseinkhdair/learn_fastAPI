@@ -12,17 +12,18 @@ router = APIRouter(
 )
 
 @router.post("/login")
-async def login(schema: LoginUserSchema,use_case = Depends(provide_login_use_case)):
+async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_case)):
     try:
         result = await use_case.execute(schema.email, schema.password)
-        if result.is_success:
-            return {"message": "Login successful", "user": result.value}
-        else:
-            return {"message": "Login failed", "error": result.error}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-@router.post("/register",)
+    if result.is_success:
+        return {"message": "Login successful", "user": result.value}
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error)
+
+@router.post("/register")
 async def register(schema: RegisterUserSchema, use_case = Depends(provide_register_use_case)):
     try:
         user = UserDBEntity(
@@ -34,13 +35,14 @@ async def register(schema: RegisterUserSchema, use_case = Depends(provide_regist
             is_admin=False,
         )
         result = await use_case.execute(user)
-
-        if result.is_success:
-            return {
-                "message": "User registered successfully",
-                "data": result.value
-            }
-        else:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+    if result.is_success:
+        return {
+            "message": "User registered successfully",
+            "data": result.value
+        }
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
+
