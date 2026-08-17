@@ -11,7 +11,7 @@ router = APIRouter(
     tags=["Auth Controller"]
 )
 
-@router.post("/login")
+@router.post("/login",status_code=status.HTTP_200_OK)
 async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_case)):
     try:
         result = await use_case.execute(schema.email, schema.password)
@@ -21,9 +21,9 @@ async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_ca
     if result.is_success:
         return {"message": "Login successful", "user": result.value}
     else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
 
-@router.post("/register")
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(schema: RegisterUserSchema, use_case = Depends(provide_register_use_case)):
     try:
         user = UserDBEntity(
