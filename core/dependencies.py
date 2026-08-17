@@ -8,6 +8,7 @@ from data.auth.repository.auth_repositoy_imp import AuthRepositoryImp
 from domain.auth.repository.auth_repository import AuthRepository
 from domain.auth.usecauses.login_user_usecase import LoginUserUseCase
 from domain.auth.usecauses.register_user_usecase import RegisterUserUseCase
+from domain.auth.usecauses.refresh_token_usecase import RefreshTokenUseCase
 
 
 @lru_cache()
@@ -28,3 +29,7 @@ def provide_register_use_case(
     repo: AuthRepository = Depends(provide_auth_repository)
 ) -> RegisterUserUseCase:
     return RegisterUserUseCase(repo)
+
+
+def provide_refresh_token_use_case() -> RefreshTokenUseCase:
+    return RefreshTokenUseCase()

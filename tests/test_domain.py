@@ -18,7 +18,9 @@ async def test_register_user_usecase():
     )
     result = await use_case.execute(user_db)
     assert result.is_success is True
-    assert result.value.name == "Sami"
+    assert result.value["user"].name == "Sami"
+    assert "access_token" in result.value
+    assert "refresh_token" in result.value
 
 @pytest.mark.asyncio
 async def test_login_user_usecase():
@@ -38,4 +40,6 @@ async def test_login_user_usecase():
 
     result = await login_use_case.execute("sami@example.com", "samipassword123")
     assert result.is_success is True
-    assert result.value.name == "Sami"
+    assert result.value["user"].name == "Sami"
+    assert "access_token" in result.value
+    assert "refresh_token" in result.value
