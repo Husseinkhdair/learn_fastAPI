@@ -1,0 +1,8 @@
+from fastapi import APIRouter, status
+
+
+router = APIRouter(
+    prefix="/auth",
+    tags=["Auth Controller"]
+)
+
