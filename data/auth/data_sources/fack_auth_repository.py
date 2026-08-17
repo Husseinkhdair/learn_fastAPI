@@ -1,4 +1,4 @@
-from core import Result
+from core.Result import Result
 
 from domain.auth.entities.user_entitiy import UserDBEntity, UserEntity
 from domain.auth.repository.auth_repository import AuthRepository

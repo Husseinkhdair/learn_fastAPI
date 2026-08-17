@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from core import Result
+from core.Result import Result
 from domain.auth.entities.user_entitiy import UserDBEntity, UserEntity
 
 class AuthRepository(ABC):
