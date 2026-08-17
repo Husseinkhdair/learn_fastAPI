@@ -1,4 +1,5 @@
 from core.Result import Result
+from core.functions.security import verify_password
 
 from domain.auth.entities.user_entitiy import UserDBEntity, UserEntity
 from domain.auth.repository.auth_repository import AuthRepository
@@ -31,7 +32,7 @@ class FackAuthRepository(AuthRepository):
             user = self.users.get(email)
             if user is None:
                 return Result.failure("User not found")
-            if user and user.password == password:
+            if user and verify_password(password, user.password):
                 user_entity = UserEntity(
                     id=user.id,
                     name=user.name,

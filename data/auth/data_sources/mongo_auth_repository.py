@@ -4,6 +4,7 @@ from pymongo.database import Database
 
 from core.Result import Result
 from core.database import get_database
+from core.functions.security import verify_password
 from domain.auth.entities.user_entitiy import UserDBEntity, UserEntity
 from domain.auth.repository.auth_repository import AuthRepository
 
@@ -49,7 +50,8 @@ class MongoAuthRepository(AuthRepository):
             if user_doc is None:
                 return Result.failure("User not found")
 
-            if user_doc.get("password") == password:
+            stored_hashed_password = user_doc.get("password", "")
+            if verify_password(password, stored_hashed_password):
                 user_entity = UserEntity(
                     id=user_doc.get("id", str(user_doc.get("_id"))),
                     name=user_doc.get("name"),

@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
+from core.functions.security import hash_password
 from data.auth.data_sources.mongo_auth_repository import MongoAuthRepository
 from domain.auth.entities.user_entitiy import UserDBEntity
 
@@ -56,7 +57,7 @@ async def test_mongo_auth_repository_login_success():
         "name": "Mongo User",
         "age": 28,
         "email": "mongo_user@example.com",
-        "password": "correctpassword",
+        "password": hash_password("correctpassword"),
         "is_admin": False
     }
 
