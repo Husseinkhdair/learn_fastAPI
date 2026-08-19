@@ -4,6 +4,7 @@ from pymongo.database import Database
 
 from core.Result import Result
 from core.database import get_database
+from core.errors.AuthException import InvalidCredentialsException, UserAlreadyExistsException
 from core.functions.security import verify_password
 from domain.auth.entities.user_entitiy import UserDBEntity, UserEntity
 from domain.auth.repository.auth_repository import AuthRepository
@@ -18,7 +19,7 @@ class MongoAuthRepository(AuthRepository):
             # Check if user already exists
             existing_user = self.collection.find_one({"email": user_entity.email})
             if existing_user:
-                return Result.failure("User already exists")
+                return Result.failure(UserAlreadyExistsException())
 
             # Generate unique ID if needed
             user_id = user_entity.id if user_entity.id and user_entity.id != "generated_id" else str(uuid.uuid4())
@@ -42,13 +43,13 @@ class MongoAuthRepository(AuthRepository):
             )
             return Result.success(created_user)
         except Exception as e:
-            return Result.failure(str(e))
+            return Result.failure(e)
 
     async def login_user(self, email: str, password: str) -> Result[UserEntity]:
         try:
             user_doc = self.collection.find_one({"email": email})
             if user_doc is None:
-                return Result.failure("User not found")
+                return Result.failure(InvalidCredentialsException("User not found"))
 
             stored_hashed_password = user_doc.get("password", "")
             if verify_password(password, stored_hashed_password):
@@ -61,6 +62,7 @@ class MongoAuthRepository(AuthRepository):
                 )
                 return Result.success(user_entity)
             else:
-                return Result.failure("Invalid email or password")
+                return Result.failure(InvalidCredentialsException("Invalid email or password"))
         except Exception as e:
-            return Result.failure(str(e))
+            return Result.failure(e)
+
