@@ -32,7 +32,7 @@ class FackAuthRepository(AuthRepository):
         try:
             user = self.users.get(email)
             if user is None:
-                return Result.failure(InvalidCredentialsException())
+                return Result.failure(InvalidCredentialsException("User not found"))
             if user and verify_password(password, user.password):
                 user_entity = UserEntity(
                     id=user.id,
@@ -42,7 +42,7 @@ class FackAuthRepository(AuthRepository):
                 )
                 return Result.success(user_entity)
             else:
-                return Result.failure(InvalidCredentialsException())
+                return Result.failure(InvalidCredentialsException("Invalid email or password"))
         except Exception as e:
             return Result.failure(e)
 
