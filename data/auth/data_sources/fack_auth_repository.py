@@ -30,6 +30,7 @@ class FackAuthRepository(AuthRepository):
 
     async def login_user(self, email: str, password: str)-> UserEntity:
         try:
+            
             user = self.users.get(email)
             if user is None:
                 raise InvalidCredentialsException()

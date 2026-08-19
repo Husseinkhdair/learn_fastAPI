@@ -8,6 +8,7 @@ class LoginUserUseCase:
 
     async def execute(self, email: str, password: str) -> dict:
         try:
+           
             res = await self.user_repository.login_user(email, password)
             user = res.value
             role = "admin" if user.is_admin else "user"
