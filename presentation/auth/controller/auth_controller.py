@@ -5,6 +5,8 @@ from core.dependencies import (
     provide_register_use_case,
     provide_refresh_token_use_case,
 )
+
+
 from core.errors.AuthException import InvalidCredentialsException, UserAlreadyExistsException
 from domain.auth.entities.user_entitiy import UserDBEntity
 from presentation.auth.schema.login_user_schema import LoginUserSchema
@@ -24,22 +26,16 @@ async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_ca
 
     try:
         result = await use_case.execute(schema.email, schema.password)
-
         if not result.is_success:
             if isinstance(result.error, Exception):
                 raise result.error
-            raise InvalidCredentialsException(str(result.error))
-
-        return {
-            **result.value
-        }
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(result.error))
 
     except InvalidCredentialsException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred during login.")
-
 
 
     # try:

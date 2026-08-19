@@ -11,3 +11,18 @@ class UserAlreadyExistsException(AuthException):
     def __init__(self,message:str = "User already exists"):
         super().__init__(message)
 
+class InvalidTokenException(AuthException):
+    def __init__(self,message:str ="Invalid Token"):
+        super().__init__(message)
+
+class AccessTokenCreationFailedException(AuthException):
+    def __init__(self, message: str = "Failed to create access token"):
+        super().__init__(message)
+
+class RefreshTokenCreationFailedException(AuthException):
+    def __init__(self, message: str = "Failed to create refresh token"):
+        super().__init__(message)
+
+class PasswordHashingFailedException(AuthException):
+    def __init__(self, message: str = "Failed to hash user password"):
+        super().__init__(message)
