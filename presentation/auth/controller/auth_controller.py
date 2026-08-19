@@ -5,6 +5,7 @@ from core.dependencies import (
     provide_register_use_case,
     provide_refresh_token_use_case,
 )
+from core.errors.AuthException import InvalidCredentialsException
 from domain.auth.entities.user_entitiy import UserDBEntity
 from presentation.auth.schema.login_user_schema import LoginUserSchema
 from presentation.auth.schema.register_user_schema import RegisterUserSchema
@@ -20,11 +21,12 @@ router = APIRouter(
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_case)):
+    
     try:
-        logger.info(f"Login attempt for email: {schema.email}")
         result = await use_case.execute(schema.email, schema.password)
+    except InvalidCredentialsException:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
     except Exception as e:
-        logger.error(f"Error during login for email {schema.email}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     if result.is_success:
@@ -33,14 +35,12 @@ async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_ca
             **result.value
         }
     else:
-        logger.warning(f"Login failed for email {schema.email}: {result.error}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(schema: RegisterUserSchema, use_case = Depends(provide_register_use_case)):
     try:
-        logger.info(f"Registering user with email: {schema.email}")
         user = UserDBEntity(
             id="generated_id",
             name=schema.name,
@@ -51,35 +51,28 @@ async def register(schema: RegisterUserSchema, use_case = Depends(provide_regist
         )
         result = await use_case.execute(user)
     except Exception as e:
-        logger.error(f"Error during registration for email {schema.email}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     if result.is_success:
-        logger.info(f"User registered successfully with email: {schema.email}")
         return {
             "message": "User registered successfully",
             **result.value
         }
     else:
-        logger.warning(f"Registration failed for email {schema.email}: {result.error}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.error)
 
 
 @router.post("/refresh", status_code=status.HTTP_200_OK)
 async def refresh_token(schema: RefreshTokenSchema, use_case = Depends(provide_refresh_token_use_case)):
     try:
-        logger.info(f"Attempting to refresh token")
         result = await use_case.execute(schema.refresh_token)
     except Exception as e:
-        logger.error(f"Error during token refresh: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     if result.is_success:
-        logger.info(f"Token refreshed successfully")
         return {
             "message": "Token refreshed successfully",
             **result.value
         }
     else:
-        logger.warning(f"Token refresh failed: {result.error}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error)

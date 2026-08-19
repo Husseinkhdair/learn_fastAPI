@@ -1,5 +1,7 @@
+
 import logging
 from pathlib import Path
+import sys
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
@@ -7,6 +9,8 @@ from presentation.auth.controller.auth_controller import router as auth_router
 from core.logging_config import setup_logging
 from core.middleware import correlation_id_middleware
 
+sys.dont_write_bytecode = True
+    
 setup_logging()
 
 app = FastAPI()
