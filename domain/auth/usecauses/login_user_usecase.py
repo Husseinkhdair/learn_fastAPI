@@ -7,12 +7,8 @@ class LoginUserUseCase:
         self.user_repository = user_repository
 
     async def execute(self, email: str, password: str) -> dict:
-
-            try:
-                res = await self.user_repository.login_user(email, password)
-            except Exception as e:
-                 raise
-            
+        try:
+            res = await self.user_repository.login_user(email, password)
             user = res.value
             role = "admin" if user.is_admin else "user"
 
@@ -24,7 +20,12 @@ class LoginUserUseCase:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user": user
-        }
+            }
+        except Exception as e:
+                raise
+            
+            
+        
 
         
         

@@ -23,19 +23,28 @@ router = APIRouter(
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_case)):
-
     try:
         result = await use_case.execute(schema.email, schema.password)
-        if not result.is_success:
-            if isinstance(result.error, Exception):
-                raise result.error
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(result.error))
+        return result
 
     except InvalidCredentialsException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
+        raise HTTPException(status_code=400,detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred during login.")
+        raise HTTPException(status_code=500,detail=str(e))
+
+
+    # try:
+    #     result = await use_case.execute(schema.email, schema.password)
+    #     if not result.is_success:
+    #         if isinstance(result.error, Exception):
+    #             raise result.error
+    #         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(result.error))
+
+    # except InvalidCredentialsException as e:
+    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    # except Exception as e:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred during login.")
 
 
     # try:
