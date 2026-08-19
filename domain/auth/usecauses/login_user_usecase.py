@@ -7,9 +7,12 @@ class LoginUserUseCase:
         self.user_repository = user_repository
 
     async def execute(self, email: str, password: str) -> dict:
-        try:
 
-            res = await self.user_repository.login_user(email, password)
+            try:
+                res = await self.user_repository.login_user(email, password)
+            except Exception as e:
+                 raise
+            
             user = res.value
             role = "admin" if user.is_admin else "user"
 
@@ -23,8 +26,6 @@ class LoginUserUseCase:
             "user": user
         }
 
-        except Exception as e:
-            raise
         
         
 

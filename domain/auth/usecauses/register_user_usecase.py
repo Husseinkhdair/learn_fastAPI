@@ -18,7 +18,7 @@ class RegisterUserUseCase:
         try:
             res = await self.user_repository.register_user(user_entity)
         except Exception as e:
-            raise e
+            raise
 
 
         created_user = res

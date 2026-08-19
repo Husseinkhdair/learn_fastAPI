@@ -26,3 +26,11 @@ class RefreshTokenCreationFailedException(AuthException):
 class PasswordHashingFailedException(AuthException):
     def __init__(self, message: str = "Failed to hash user password"):
         super().__init__(message)
+
+class PasswordVerificationFailedException(AuthException):
+    def __init__(self, message: str = "Failed to verify user password"):
+        super().__init__(message)
+        
+class ErrorDataBaseException(AuthException):
+        def __init__(self, message: str = "Error In DataBase"):
+            super().__init__(message)
