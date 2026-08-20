@@ -1,4 +1,6 @@
-from core.errors.AuthException import AccessTokenCreationFailedException, RefreshTokenCreationFailedException
+from fastapi import HTTPException,status
+
+from core.errors.AuthException import AccessTokenCreationFailedException, ErrorServerException, RefreshTokenCreationFailedException
 from core.functions.jwt import Role, TokenPayload, create_access_token, create_refresh_token
 from core.functions.security import hash_password
 from domain.auth.entities.user_entitiy import UserDBEntity
@@ -35,7 +37,11 @@ class RegisterUserUseCase:
                 "user": created_user
             }
         except Exception:
-            raise
+            
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"error": ErrorServerException().message}
+            )
 
         
         
