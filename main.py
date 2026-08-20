@@ -2,10 +2,10 @@
 import logging
 from pathlib import Path
 import sys
-from fastapi import FastAPI, Request,status
+from fastapi import Depends, FastAPI, Request,status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
-
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from presentation.auth.controller.auth_controller import router as auth_router
 from core.logging_config import setup_logging
 from core.middleware import correlation_id_middleware
@@ -15,6 +15,7 @@ sys.dont_write_bytecode = True
 setup_logging()
 
 app = FastAPI()
+
 
 app.middleware("http")(correlation_id_middleware)
 logger = logging.getLogger(__name__)

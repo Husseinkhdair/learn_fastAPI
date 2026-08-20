@@ -4,8 +4,8 @@ from core.dependencies import (
     provide_login_use_case,
     provide_register_use_case,
     provide_refresh_token_use_case,
+    verify_token
 )
-
 
 from core.errors.AuthException import InvalidCredentialsException, InvalidTokenException, UserAlreadyExistsException
 from domain.auth.entities.user_entitiy import UserDBEntity
@@ -14,11 +14,13 @@ from presentation.auth.schema.register_user_schema import RegisterUserSchema
 from presentation.auth.schema.refresh_token_schema import RefreshTokenSchema
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
-    tags=["Auth Controller"]
+    tags=["Auth Controller"],
+    
 )
 
 @router.post("/login", status_code=status.HTTP_200_OK)
@@ -68,5 +70,19 @@ async def refresh_token(schema: RefreshTokenSchema, use_case = Depends(provide_r
         
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error in Server')
+
+
+@router.get("/profile", status_code=status.HTTP_200_OK)
+async def profile(token: str = Depends(verify_token)):
+    try:
+        return {
+            'id': 1,
+            'name': 'hussein',
+            'age': 25,
+            'token': token
+        }
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 
 

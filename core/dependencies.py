@@ -1,6 +1,9 @@
 import os
 from functools import lru_cache
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+security = HTTPBearer()
 
 from data.auth.data_sources.fack_auth_repository import FackAuthRepository
 from data.auth.data_sources.mongo_auth_repository import MongoAuthRepository
@@ -9,7 +12,7 @@ from domain.auth.repository.auth_repository import AuthRepository
 from domain.auth.usecauses.login_user_usecase import LoginUserUseCase
 from domain.auth.usecauses.register_user_usecase import RegisterUserUseCase
 from domain.auth.usecauses.refresh_token_usecase import RefreshTokenUseCase
-
+from core.functions.jwt import decode_token
 
 @lru_cache()
 def provide_auth_repository() -> AuthRepository:
@@ -33,3 +36,16 @@ def provide_register_use_case(
 
 def provide_refresh_token_use_case() -> RefreshTokenUseCase:
     return RefreshTokenUseCase()
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        # فحص وفك تشفير التوكن
+        payload = decode_token(token=token)
+        return payload  # أو return token
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
