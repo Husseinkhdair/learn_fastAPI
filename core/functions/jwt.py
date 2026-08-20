@@ -86,12 +86,14 @@ def decode_token(token: str) -> TokenPayload:
         payload_data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return TokenPayload.from_dict(payload_data)
     except jwt.ExpiredSignatureError:
+        logger.info("Token is expired, %s", token)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": "Token has expired"},
             headers={"WWW-Authenticate": "Bearer"},
         )
     except (jwt.InvalidTokenError, ValueError, KeyError):
+        logger.info("Token is invalid, %s", token)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": "Could not validate credentials"},

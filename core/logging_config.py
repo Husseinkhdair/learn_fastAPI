@@ -38,7 +38,8 @@ def setup_logging():
         "%(asctime)s | "
         "%(levelname)s | "
         "correlation_id=%(correlation_id)s | "
-        "%(name)s | "
+        "func=%(funcName)s | "
+        "file=%(filename)s:%(lineno)d | "
         "%(message)s"
     )
 
