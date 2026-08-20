@@ -48,3 +48,13 @@ async def validation_exception_handler(
           "message": f"Field '{field_name}' is required",
       },
   )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled server exception on %s %s: %s", request.method, request.url.path, exc)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Error in Server"}
+    )
+

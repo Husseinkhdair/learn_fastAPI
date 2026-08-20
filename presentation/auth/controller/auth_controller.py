@@ -30,12 +30,13 @@ async def login(schema: LoginUserSchema, use_case = Depends(provide_login_use_ca
         return result
 
     except InvalidCredentialsException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500,detail=str(e))
+        logger.exception("Unexpected error in login endpoint: %s", e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error in Server')
 
-
-   
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(schema: RegisterUserSchema, use_case = Depends(provide_register_use_case)):
@@ -53,10 +54,11 @@ async def register(schema: RegisterUserSchema, use_case = Depends(provide_regist
         return result
     except UserAlreadyExistsException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail='Error in Server')
-
+        logger.exception("Unexpected error in register endpoint: %s", e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error in Server')
 
 
 @router.post("/refresh", status_code=status.HTTP_200_OK)
@@ -66,9 +68,11 @@ async def refresh_token(schema: RefreshTokenSchema, use_case = Depends(provide_r
         return result
 
     except InvalidTokenException as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=str(e))
-        
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.exception("Unexpected error in refresh_token endpoint: %s", e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error in Server')
 
 
@@ -81,8 +85,12 @@ async def profile(token: str = Depends(verify_token)):
             'age': 25,
             'token': token
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        logger.exception("Unexpected error in profile endpoint: %s", e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error in Server')
+
 
 
 

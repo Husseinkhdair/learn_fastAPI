@@ -1,8 +1,11 @@
+import logging
 from fastapi import HTTPException, status
 
 from core.errors.AuthException import ErrorServerException
 from core.functions.jwt import Role, TokenPayload, create_access_token, create_refresh_token
 from domain.auth.repository.auth_repository import AuthRepository
+
+logger = logging.getLogger(__name__)
 
 
 class LoginUserUseCase:
@@ -30,11 +33,13 @@ class LoginUserUseCase:
             }
         except HTTPException:
             raise
-        except Exception:
+        except Exception as e:
+            logger.exception("Unexpected error in LoginUserUseCase: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"error": ErrorServerException().message}
             )
+
 
             
             

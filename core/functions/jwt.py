@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 from enum import Enum
@@ -6,6 +7,8 @@ from dotenv import load_dotenv
 from fastapi import HTTPException, status
 
 from core.errors.AuthException import ErrorServerException
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -56,7 +59,8 @@ def create_access_token(payload: TokenPayload) -> str:
     try:
         token_data = payload.to_dict(default_days=ACCESS_TOKEN_EXPIRE_DAYS, token_type="access")
         return jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
-    except Exception:
+    except Exception as e:
+        logger.exception("Failed to create access token: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": ErrorServerException().message}
@@ -68,7 +72,8 @@ def create_refresh_token(payload: TokenPayload) -> str:
     try:
         token_data = payload.to_dict(default_days=REFRESH_TOKEN_EXPIRE_DAYS, token_type="refresh")
         return jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
-    except Exception:
+    except Exception as e:
+        logger.exception("Failed to create refresh token: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": ErrorServerException().message}
