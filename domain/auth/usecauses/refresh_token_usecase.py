@@ -10,7 +10,7 @@ class RefreshTokenUseCase:
             try:
                 payload = decode_token(refresh_token)
             except Exception as e:
-                raise InvalidTokenException("Invalid or expired refresh token") from e
+                raise InvalidTokenException("Invalid or expired refresh token")
 
             user_id = payload.get("id")
             role = payload.get("role", "user")
@@ -22,13 +22,13 @@ class RefreshTokenUseCase:
             try:
                 new_access_token = create_access_token(user_id=user_id, role=role)
             except Exception as e:
-                raise AccessTokenCreationFailedException() from e
+                raise AccessTokenCreationFailedException()
 
             # 3. إنشاء Refresh Token
             try:
                 new_refresh_token = create_refresh_token(user_id=user_id, role=role)
             except Exception as e:
-                raise RefreshTokenCreationFailedException() from e
+                raise RefreshTokenCreationFailedException()
 
             return {
                 "access_token": new_access_token,

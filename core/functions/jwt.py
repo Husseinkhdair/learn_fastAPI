@@ -36,6 +36,7 @@ def create_refresh_token(user_id: str, role: str, expires_delta: timedelta | Non
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
+
     payload = {
         "id": str(user_id),
         "role": str(role),

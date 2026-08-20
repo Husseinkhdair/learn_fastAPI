@@ -53,7 +53,7 @@ async def register(schema: RegisterUserSchema, use_case = Depends(provide_regist
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,error='Error in Server')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail='Error in Server')
 
 
 
@@ -64,9 +64,9 @@ async def refresh_token(schema: RefreshTokenSchema, use_case = Depends(provide_r
         return result
 
     except InvalidTokenException as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,error=str(e))
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=str(e))
         
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, error='Error in Server')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error in Server')
 
 
