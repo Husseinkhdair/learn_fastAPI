@@ -1,5 +1,8 @@
-from core.errors.AuthException import AccessTokenCreationFailedException, InvalidTokenException, RefreshTokenCreationFailedException
-from core.functions.jwt import decode_token, create_access_token, create_refresh_token
+from fastapi import HTTPException, status
+
+from core.errors.AuthException import AccessTokenCreationFailedException, ErrorServerException, RefreshTokenCreationFailedException
+from core.functions.jwt import TokenPayload, create_access_token, create_refresh_token, decode_token
+
 
 class RefreshTokenUseCase:
     def __init__(self):
@@ -7,34 +10,30 @@ class RefreshTokenUseCase:
 
     async def execute(self, refresh_token: str) -> dict:
         try:
-            try:
-                payload = decode_token(refresh_token)
-            except Exception as e:
-                raise InvalidTokenException("Invalid or expired refresh token")
-
-            user_id = payload.get("id")
-            role = payload.get("role", "user")
-
-            if not user_id:
-                raise InvalidTokenException()
-
+            payload: TokenPayload = decode_token(refresh_token)
 
             try:
-                new_access_token = create_access_token(user_id=user_id, role=role)
+                new_access_token = create_access_token(payload)
             except Exception as e:
-                raise AccessTokenCreationFailedException()
+                raise AccessTokenCreationFailedException() from e
 
             # 3. إنشاء Refresh Token
             try:
-                new_refresh_token = create_refresh_token(user_id=user_id, role=role)
+                new_refresh_token = create_refresh_token(payload)
             except Exception as e:
-                raise RefreshTokenCreationFailedException()
+                raise RefreshTokenCreationFailedException() from e
 
             return {
                 "access_token": new_access_token,
                 "refresh_token": new_refresh_token,
                 "token_type": "bearer"
             }
-        except Exception as e:
+        except HTTPException:
             raise
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"error": ErrorServerException().message}
+            )
+
        

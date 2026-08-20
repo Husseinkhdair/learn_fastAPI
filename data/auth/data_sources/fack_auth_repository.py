@@ -1,4 +1,6 @@
-from core.errors.AuthException import PasswordVerificationFailedException
+from fastapi import HTTPException,status
+
+from core.errors.AuthException import ErrorServerException, PasswordVerificationFailedException
 from core.errors.AuthException import InvalidCredentialsException, UserAlreadyExistsException
 from core.functions.security import verify_password
 
@@ -13,7 +15,12 @@ class FackAuthRepository(AuthRepository):
     async def register_user(self, user_entity: UserDBEntity)-> UserEntity:
         try:
             if user_entity.email in self.users:
-                raise UserAlreadyExistsException()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": UserAlreadyExistsException().message}
+
+                )
+                
             
             user_entity.id = str(len(self.users) + 1)  # Assign a unique ID
             self.users[user_entity.email] = user_entity
@@ -26,14 +33,23 @@ class FackAuthRepository(AuthRepository):
             
             return user
         except Exception as e:
-            raise e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"error":ErrorServerException().message}
+            )
 
     async def login_user(self, email: str, password: str)-> UserEntity:
         try:
             
             user = self.users.get(email)
             if user is None:
-                raise InvalidCredentialsException()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "error":InvalidCredentialsException().message
+                    }
+                )
+                
             
             try:
                 if user and verify_password(password, user.password):
@@ -45,14 +61,21 @@ class FackAuthRepository(AuthRepository):
                 )
                     return user_entity
                 else:
-                    raise InvalidCredentialsException()
-            except PasswordVerificationFailedException as e:
-                raise e
-            except InvalidCredentialsException as e:
-                raise e
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "error":InvalidCredentialsException().message
+                        }
+                    )
             except Exception as e:
-                raise e
+                raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail={"error":ErrorServerException().message}
+                    )
         except Exception as e:
-            raise e
+            raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail={"error":ErrorServerException().message}
+                )
 
 

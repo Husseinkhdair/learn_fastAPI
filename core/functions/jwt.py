@@ -1,8 +1,11 @@
 import os
 from datetime import datetime, timedelta, timezone
+from enum import Enum
 import jwt
-from fastapi import HTTPException, status
 from dotenv import load_dotenv
+from fastapi import HTTPException, status
+
+from core.errors.AuthException import ErrorServerException
 
 load_dotenv()
 
@@ -12,55 +15,80 @@ ACCESS_TOKEN_EXPIRE_DAYS = int(os.getenv("ACCESS_TOKEN_EXPIRE_DAYS", "5"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
 
 
-def create_access_token(user_id: str, role: str, expires_delta: timedelta | None = None) -> str:
-    """Creates a JWT Access Token with payload containing id and role."""
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-
-    payload = {
-        "id": str(user_id),
-        "role": str(role),
-        "type": "access",
-        "exp": expire
-    }
-
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+class Role(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 
-def create_refresh_token(user_id: str, role: str, expires_delta: timedelta | None = None) -> str:
-    """Creates a JWT Refresh Token with payload containing id and role."""
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+class TokenPayload:
+    def __init__(
+        self,
+        user_id: str,
+        role: Role,
+        expires_delta: timedelta | None = None
+    ):
+        self.user_id = user_id
+        self.role = role
+        self.expires_delta = expires_delta
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "TokenPayload":
+        return cls(
+            user_id=str(data.get("user_id") or data.get("id")),
+            role=Role(data.get("role")),
+            expires_delta=data.get("expires_delta")
+        )
+
+    def to_dict(self, default_days: int = ACCESS_TOKEN_EXPIRE_DAYS, token_type: str = "access") -> dict:
+        delta = self.expires_delta if self.expires_delta else timedelta(days=default_days)
+        expire_at = datetime.now(timezone.utc) + delta
+
+        return {
+            "user_id": str(self.user_id),
+            "role": self.role.value,
+            "type": token_type,
+            "exp": expire_at
+        }
 
 
-    payload = {
-        "id": str(user_id),
-        "role": str(role),
-        "type": "refresh",
-        "exp": expire
-    }
+def create_access_token(payload: TokenPayload) -> str:
+    """Creates a JWT Access Token."""
+    try:
+        token_data = payload.to_dict(default_days=ACCESS_TOKEN_EXPIRE_DAYS, token_type="access")
+        return jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": ErrorServerException().message}
+        )
 
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def create_refresh_token(payload: TokenPayload) -> str:
+    """Creates a JWT Refresh Token."""
+    try:
+        token_data = payload.to_dict(default_days=REFRESH_TOKEN_EXPIRE_DAYS, token_type="refresh")
+        return jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": ErrorServerException().message}
+        )
 
 
-def decode_token(token: str) -> dict:
+def decode_token(token: str) -> TokenPayload:
     """Decodes and validates a JWT token."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        payload_data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return TokenPayload.from_dict(payload_data)
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
+            detail={"error": "Token has expired"},
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except jwt.InvalidTokenError:
+    except (jwt.InvalidTokenError, ValueError, KeyError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail={"error": "Could not validate credentials"},
             headers={"WWW-Authenticate": "Bearer"},
         )

@@ -34,3 +34,8 @@ class PasswordVerificationFailedException(AuthException):
 class ErrorDataBaseException(AuthException):
         def __init__(self, message: str = "Error In DataBase"):
             super().__init__(message)
+
+class ErrorServerException(Exception):
+    def __init__(self,message:str = "Error In Server"):
+        self.message = message
+        super().__init(message)

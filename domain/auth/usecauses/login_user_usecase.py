@@ -1,4 +1,7 @@
-from core.functions.jwt import create_access_token, create_refresh_token
+from fastapi import HTTPException, status
+
+from core.errors.AuthException import ErrorServerException
+from core.functions.jwt import Role, TokenPayload, create_access_token, create_refresh_token
 from domain.auth.repository.auth_repository import AuthRepository
 
 
@@ -8,22 +11,31 @@ class LoginUserUseCase:
 
     async def execute(self, email: str, password: str) -> dict:
         try:
-           
-            res = await self.user_repository.login_user(email, password)
-            user = res.value
-            role = "admin" if user.is_admin else "user"
+            user = await self.user_repository.login_user(email, password)
+            role = Role.ADMIN if user.is_admin else Role.USER
 
-            access_token = create_access_token(user_id=user.id, role=role)
-            refresh_token = create_refresh_token(user_id=user.id, role=role)
+            payload = TokenPayload(
+                user_id=str(user.id),
+                role=role
+            )
+
+            access_token = create_access_token(payload)
+            refresh_token = create_refresh_token(payload)
 
             return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "bearer",
-            "user": user
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer",
+                "user": user
             }
-        except Exception as e:
-                raise
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"error": ErrorServerException().message}
+            )
+
             
             
         

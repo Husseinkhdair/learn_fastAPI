@@ -1,6 +1,6 @@
-from core.errors.AuthException import AccessTokenCreationFailedException, PasswordHashingFailedException, RefreshTokenCreationFailedException
+from core.errors.AuthException import AccessTokenCreationFailedException, RefreshTokenCreationFailedException
+from core.functions.jwt import Role, TokenPayload, create_access_token, create_refresh_token
 from core.functions.security import hash_password
-from core.functions.jwt import create_access_token, create_refresh_token
 from domain.auth.entities.user_entitiy import UserDBEntity
 from domain.auth.repository.auth_repository import AuthRepository
 
@@ -11,41 +11,31 @@ class RegisterUserUseCase:
 
     async def execute(self, user_entity: UserDBEntity) -> dict:
         try:
-            try:
-                user_entity.password = hash_password(user_entity.password)
-            except Exception as e:
-                raise PasswordHashingFailedException()
+            user_entity.password = hash_password(user_entity.password)
+            created_user = await self.user_repository.register_user(user_entity)
+            role = Role.ADMIN if created_user.is_admin else Role.USER
+
+            payload = TokenPayload(user_id=str(created_user.id), role=role)
 
             try:
-                res = await self.user_repository.register_user(user_entity)
-            except Exception as e:
-                raise
-
-
-            created_user = res
-            role = "admin" if created_user.is_admin else "user"
-
-            try:
-                access_token = create_access_token(user_id=created_user.id, role=role)
-
+                access_token = create_access_token(payload)
             except Exception as e:
                 raise AccessTokenCreationFailedException() from e
 
             # 3. إنشاء Refresh Token
             try:
-                refresh_token = create_refresh_token(user_id=created_user.id, role=role)
-
+                refresh_token = create_refresh_token(payload)
             except Exception as e:
                 raise RefreshTokenCreationFailedException() from e
-
-            
 
             return {
                 "access_token": access_token,
                 "refresh_token": refresh_token,
+                "token_type": "bearer",
                 "user": created_user
             }
-        except Exception as e:
+        except Exception:
             raise
+
         
         
